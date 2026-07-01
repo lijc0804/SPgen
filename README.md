@@ -1,6 +1,22 @@
-# SPgen Demo
+# SPgen: Proteome-wide Spatial Protein Generation with Multimodal Foundation Models
 
-This repository provides a demonstration workflow for SPgen.
+SPgen is a multimodal foundation-model–driven framework for **proteome-wide spatial protein inference from spatial proteomics data**.
+
+It learns transferable relationships between protein intrinsic properties and spatial tissue organization, enabling prediction of spatial distributions for proteins beyond experimentally measured panels.
+
+---
+
+##  Key Features
+
+- Proteome-wide spatial protein inference beyond measured protein panels  
+- Multimodal foundation model integration (sequence, function, transcriptomics)  
+- Graph neural network for spatial tissue modeling  
+- Cross-modal representation learning between proteins and tissue structure  
+- Zero-shot prediction for previously unmeasured proteins  
+- Validated on multiple MS-based spatial proteomics datasets  
+
+---
+
 
 ## Step 1: Create the Environment
 
