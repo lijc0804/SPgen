@@ -176,7 +176,7 @@ if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument( '--dataset_name', type=str, default="Cerebellum-PLATO", help='mouse_brain_coronal Intestinal-villi Cerebellum-PLATO') 
-    parser.add_argument( '--device_id', type=int, default=1, help='device_id')
+    parser.add_argument( '--device_id', type=int, default=0, help='device_id')
     parser.add_argument( '--species', type=str, default='10090', help='Mus musculus: 10090')
     parser.add_argument( '--use_gene_emb', type=str, default='scGPT+ESM+pubmedbert', help='scGPT+ESM+pubmedbert')
     parser.add_argument( '--use_gene_union', type=int, default=1, help='use_gene_union')
