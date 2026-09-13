@@ -1,4 +1,4 @@
-# SPgen: Proteome-wide Spatial Proteomics Generation Using Multimodality Foundation Models
+# SPgen: Proteome-wide Spatial Proteomics generation using multi-modality foundation models
 
 SPgen is a multimodal foundation-model-based framework for **proteome-wide spatial protein generation** from spatial proteomics data.
 
@@ -182,6 +182,8 @@ The pretrained model used in this study is available from:
 
 https://huggingface.co/NeuML/pubmedbert-base-embeddings
 
+Download the PubMedBERT model from the link above and save it to `./biomedNLP/` before running the embedding script.
+
 SPgen uses `run_pubmedbert_embedding.py` to extract relevant UniProt functional descriptions and calculate PubMedBERT embeddings.
 
 For example:
@@ -322,7 +324,7 @@ For example, for the PLATO cerebellum dataset:
 
 ```bash
 python SP_demo.py \
-    --dataset_name Cerebellum-PLATO \
+    --dataset_name Cerebellum-PLATO 
 ```
 
 Supported dataset names are:
@@ -366,7 +368,7 @@ Proteome-wide spatial predictions can then be generated using:
 ```bash
 python SP_predict.py \
     --dataset_name Cerebellum-PLATO \
-    --species 10090 \
+    --species 10090 
 ```
 
 For mouse datasets:
@@ -503,7 +505,10 @@ A complete SPgen workflow consists of:
 
 If you use SPgen in your research, please cite:
 
-**Li, Jiachen, Kaiyuan Yang, Qiaoling Che, Diwei Zheng, Wei Wei, Cheng Jin, and Ye Yuan. "SPgen: Proteome-wide Spatial Proteomics generation using multi-modality foundation models." bioRxiv (2026): 2026-07.**
+**Li, J., Yang, K., Che, Q., Zheng, D., Wei, W., Jin, C., and Yuan, Y.
+SPgen: Proteome-wide Spatial Proteomics generation using multi-modality foundation models.
+bioRxiv 2026.07.16.739037 (2026).
+https://doi.org/10.64898/2026.07.16.739037**
 
 The complete citation information will be added upon publication.
 
