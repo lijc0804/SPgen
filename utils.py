@@ -53,7 +53,7 @@ def prot2gene_map(fasta_file="data/uniprot/uniprot_sprot.fasta", species='10090'
     for record in SeqIO.parse(fasta_file, "fasta"):
         desc = record.description
 
-        # ===================== 1. species（可选过滤） =====================
+        # ===================== 1. species =====================
         taxid = re.search(r'OX=(\d+)', desc).group(1)
         if species != taxid:
             continue
@@ -65,21 +65,21 @@ def prot2gene_map(fasta_file="data/uniprot/uniprot_sprot.fasta", species='10090'
             continue
         uid = parts[1]
 
-        # 3. 提取 gene symbol (GN=)
+        # 3. gene symbol (GN=)
         gene_match = re.search(r"GN=([A-Za-z0-9_\-]+)", desc)
 
         if gene_match:
             gene_id = gene_match.group(1).split("-")[0].upper()
         else:
-            # fallback: 使用 entry name
+            # fallback: entry name
             gene_id = parts[2].upper()
 
 
-        # 4. 去 isoform（非常关键）
+        # 4.  isoform
         gene_id = gene_id.split("-")[0]
         gene_id = gene_id.upper()
         
-        # 5. 构建 gene -> protein
+        # 5.  gene -> protein
         if uid not in uniprot2gene.keys():
             uniprot2gene[uid] = [gene_id]
             protein_list.append(uid)
@@ -136,18 +136,14 @@ def analyze_distribution(X_dense, save_path):
     data = np.ravel(X_dense)
     data = data[~np.isnan(data)]
 
-    # log 变换（加 1 避免 log(0)）
     log_data = np.log1p(data)
 
-    # 画左右两个直方图
     fig, axs = plt.subplots(1, 2, figsize=(12, 4))
-    # 原始分布
     axs[0].hist(data, bins=100, color='skyblue', edgecolor='black')
     axs[0].set_title("Original Distribution")
     axs[0].set_xlabel("Expression Value")
     axs[0].set_ylabel("Frequency")
     axs[0].set_yscale("log")  # 可选
-    # log 变换后分布
     axs[1].hist(log_data, bins=100, color='salmon', edgecolor='black')
     axs[1].set_title("Log1p Transformed Distribution")
     axs[1].set_xlabel("log(1 + Expression Value)")
@@ -171,9 +167,9 @@ def build_spatial_graph(coords: torch.Tensor, K=9, device='cpu'):
     i_all, j_all, d_all = [], [], []
     N = coords.shape[0]
     for i in range(N):
-        min_dist = distances[i][1]  # 第一个是自己，第二个是最近邻
+        min_dist = distances[i][1]  
         threshold = min_dist * 1.5
-        for j_idx, dist in zip(indices[i][1:], distances[i][1:]):  # 跳过自己
+        for j_idx, dist in zip(indices[i][1:], distances[i][1:]):  
             if dist <= threshold:
                 i_all.append(i)
                 j_all.append(j_idx)
@@ -289,7 +285,7 @@ def get_scGPT_emb(protein_list, gene_list, scGPT_gene_df, device):
     scGPT_gene_emb = torch.from_numpy(gene_embeddings_aligned).float().to(device)
     protein_mask = (scGPT_gene_emb.abs().sum(dim=1) != 0)
     masked_out_ids = [pid for pid, keep in zip(protein_list, protein_mask) if not keep]
-    print(f"被scGPT mask 掉的蛋白 ID: {len(masked_out_ids), masked_out_ids[:10]}")
+    print(f"scGPT mask protein ID: {len(masked_out_ids), masked_out_ids[:10]}")
     return scGPT_gene_emb, protein_mask
 
 
@@ -299,7 +295,7 @@ def get_ESM_emb(protein_list, ESM_gene_df, device): # adata.var_names is uniprot
     ESM_gene_emb = torch.from_numpy(ESM_gene_emb).float().to(device)
     protein_mask_ESM = (ESM_gene_emb.abs().sum(dim=1) != 0)  # True 表示保留的蛋白
     masked_out_ids = [pid for pid, keep in zip(list(protein_list), protein_mask_ESM) if not keep]
-    print(f"被ESM mask 掉的蛋白 ID: {len(masked_out_ids), masked_out_ids[:10]}")
+    print(f"ESM mask protein ID: {len(masked_out_ids), masked_out_ids[:10]}")
     return ESM_gene_emb, protein_mask_ESM
 
 def get_pubmedbert_emb(protein_list, gene_df, device):
@@ -314,7 +310,7 @@ def get_pubmedbert_emb(protein_list, gene_df, device):
     pubmedbert_gene_emb = torch.from_numpy(gene_embeddings_aligned).float().to(device)
     protein_mask = (pubmedbert_gene_emb.abs().sum(dim=1) != 0)
     masked_out_ids = [pid for pid, keep in zip(protein_list, protein_mask) if not keep]
-    print(f"被pubmedbert mask 掉的蛋白 ID: {len(masked_out_ids), masked_out_ids[:10]}")
+    print(f"pubmedbert mask protein ID: {len(masked_out_ids), masked_out_ids[:10]}")
     return pubmedbert_gene_emb, protein_mask
 
 
@@ -328,7 +324,7 @@ def concate_gene_emb(protein_list, emb_list, mask_list, method='union'):
         elif method=='intersection':
             protein_mask = torch.stack(mask_list, dim=0).all(dim=0) # protein_mask = mask_list[0] & mask_list[1] & ...
         masked_out_ids = [pid for pid, keep in zip(protein_list, protein_mask) if not keep]
-        print(f"被 mask 掉的蛋白 ID: {len(masked_out_ids), masked_out_ids[:10]}")
+        print(f"Mask protein ID: {len(masked_out_ids), masked_out_ids[:10]}")
         return gene_emb, protein_mask
     
 def GO_KEGG(gene_list, background=None, figure_path='figures/', save_name='', organism='mouse'):
@@ -383,7 +379,6 @@ def GO_KEGG(gene_list, background=None, figure_path='figures/', save_name='', or
 
 def kde_mode(x, grid_size=1000):
     """
-    使用 KDE 计算连续变量的理论众数
     x: 1D numpy array
     """
     x = np.asarray(x)
@@ -425,8 +420,8 @@ def analyze_recon_loss(x, x_pred, figure_path, protein_mask_loss=None, loss_type
     scores = np.array(scores)
     
     if plot_hist:
-        sns.set(style="whitegrid", context="talk")  # context 放大整体字体
-        plt.figure(figsize=(4, 6))  # 纵向比例
+        sns.set(style="whitegrid", context="talk")  
+        plt.figure(figsize=(4, 6))  
         valid_scores = scores[~np.isnan(scores)]
 
         sns.violinplot(
@@ -444,7 +439,6 @@ def analyze_recon_loss(x, x_pred, figure_path, protein_mask_loss=None, loss_type
             alpha=0.6
         )
 
-        # 统计量
         mean_val = np.mean(valid_scores)
         median_val = np.median(valid_scores)
         mode_val = kde_mode(valid_scores)
@@ -534,7 +528,7 @@ def analyze_results(args, adata, adata_test, adata_test_X_norm, pred_expr_test, 
     #test_scores_2 = analyze_recon_loss(adata_test_X_norm, pred_expr_test, figure_path, protein_mask_test, loss_type='spearman')
     test_scores_df = pd.DataFrame({"test_scores": test_scores}, index=list(adata_test.var_names[protein_mask_test.detach().cpu().numpy()]))
 
-    # === SVG 绘图 ===
+    # === SVG  ===
     svg_df = adata_test.uns["moranI"].join(test_scores_df, how="inner")
 
     sns.jointplot(
@@ -599,7 +593,6 @@ def analyze_results(args, adata, adata_test, adata_test_X_norm, pred_expr_test, 
     filtered_svg_genes = [g for g in svg_df_sort.index.tolist() if g in set(masked_protein_test)]
     print('number of filtered_svg_genes:', len(filtered_svg_genes))
 
-    # === 可视化预测 ===
     if show_genes:
         proteins_list_all = []
         for pp in adata_test.var_names:
@@ -620,12 +613,12 @@ def analyze_results(args, adata, adata_test, adata_test_X_norm, pred_expr_test, 
         adata_test.obs["group"] = "SP data"
         adata_predict.obs["group"] = "SPgen"
         n_genes2show = np.min([512, len(filtered_svg_genes)])
-        nrows_img = 8  # 每个批次8行
-        ncols_img = 3  # 左右各一幅图
+        nrows_img = 8  
+        ncols_img = 3  
         
         plt.rcParams.update({
-            "font.size": 18,            # 所有字体放大
-            "axes.titlesize": 25,       # 标题
+            "font.size": 18,            
+            "axes.titlesize": 25,       
             "axes.labelsize": 25,       # x,y label
             "xtick.labelsize": 18,      
             "ytick.labelsize": 18,
@@ -861,7 +854,6 @@ def parse_uniprot_sprot_species(dat_path):
 
 
 class ExpertDecoder(nn.Module):
-    """单个专家网络：多层 GATConv + LayerNorm + 残差"""
     def __init__(self, in_dim, hidden_dim, emb_dim, num_layers, dropout, use_residual):
         super().__init__()
         self.use_residual = use_residual
@@ -895,30 +887,24 @@ class ExpertDecoder(nn.Module):
 
     
 class GNNCell2ExprDecoder(nn.Module):
-    """
-    多分支 gene embedding 融合版解码器：
-    对 gene_emb 做分块与融合，而 cell_emb 是统一输入。
-    """
     def __init__(self, in_dim, g_emb_dims, hidden_dim=1024, emb_dim=512, num_layers=4,
                  dropout=0.1, use_residual=True, mask_ratio=0.5):
         """
-        g_emb_dims: list[int]，每种 gene embedding 的维度
+        g_emb_dims: list[int]
         """
         super().__init__()
         assert isinstance(g_emb_dims, (list, tuple)) and len(g_emb_dims) > 0, \
-            "g_emb_dims 应为基因embedding的多个维度列表，例如 [128, 256, 64]"
+            "g_emb_dims e.g. [128, 256, 64]"
 
         self.num_branches = len(g_emb_dims)
         self.mask_ratio = mask_ratio
         self.emb_dim = emb_dim
         self.g_emb_dims = g_emb_dims
 
-        # 为每个 gene embedding 块建立一个独立投影层
         self.proj_layers = nn.ModuleList([
             nn.Linear(in_dim, emb_dim) for in_dim in g_emb_dims
         ])
 
-        # 融合权重网络
         total_in_dim = sum(g_emb_dims)
         self.hidden_dim = hidden_dim
 
@@ -929,7 +915,6 @@ class GNNCell2ExprDecoder(nn.Module):
             nn.Softmax(dim=-1)
         ).to(next(self.parameters()).device)
 
-        # cell_emb -> 表达重建的核心 GNN 部分
         self.decoder = ExpertDecoder(
             in_dim=in_dim,
             hidden_dim=hidden_dim,
@@ -947,13 +932,9 @@ class GNNCell2ExprDecoder(nn.Module):
         N_cells, _ = cell_emb.shape
         N_genes, D = gene_emb.shape
 
-        assert D == sum(self.g_emb_dims), \
-            f"gene_emb维度({D})与g_emb_dims总和({sum(self.g_emb_dims)})不匹配"
 
-        # === 拆分 gene_emb ===
         gene_chunks = torch.split(gene_emb, self.g_emb_dims, dim=-1)
 
-        # === 随机mask增强 ===
         if self.training and self.mask_ratio > 0:
             masked_chunks = []
             for g in gene_chunks:
@@ -961,7 +942,6 @@ class GNNCell2ExprDecoder(nn.Module):
                 masked_chunks.append(g * mask)
             gene_chunks = masked_chunks
 
-        # === 各分支独立生成 gene 表征 ===
         gene_proj_list = [
             proj(g) for proj, g in zip(self.proj_layers, gene_chunks)
         ]  # [N_genes, emb_dim]
@@ -970,7 +950,6 @@ class GNNCell2ExprDecoder(nn.Module):
             gene_proj_list, dim=-1
         )  # [N_genes, emb_dim, num_branches]
 
-        # === 融合权重 ===
         fusion_weight = self.fusion_net(
             gene_emb
         )  # [N_genes, num_branches]
@@ -982,7 +961,6 @@ class GNNCell2ExprDecoder(nn.Module):
             dim=-1
         )  # [N_genes, emb_dim]
 
-        # === 用 fused gene embedding 进行重建 ===
         with torch.no_grad():
             fused_gene_emb = F.normalize(fused_gene_emb, dim=-1)
 
