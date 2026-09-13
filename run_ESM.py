@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 
 class FlexibleEmbedder:
-    def __init__(self, fasta_path: str = "data/uniprot/uniprot_sprot.fasta", esm_model_name: str = "esm1b_t33_650M_UR50S", gpu_id:int=1):
+    def __init__(self, fasta_path: str = "data/uniprot/uniprot_sprot.fasta", esm_model_name: str = "esm1b_t33_650M_UR50S", gpu_id:int=0):
         if not os.path.exists(fasta_path):
             raise FileNotFoundError(f"FASTA file {fasta_path} not found.")
         self.records = {record.id: record for record in SeqIO.parse(fasta_path, "fasta")}
@@ -39,7 +39,6 @@ class FlexibleEmbedder:
         return success, sequences, missing
 
     def fetch_by_uniprot_ids(self, uniprot_ids: List[str]) -> Tuple[List[str], List[str], List[str]]:
-        """通过UniProt ID获取对应的蛋白质序列"""
         id_to_record = {}
         for rid, record in self.records.items():
             if "|" in rid:
@@ -78,7 +77,6 @@ class FlexibleEmbedder:
         all_embeddings = []
         self.model.eval()
 
-        # 将超长序列裁剪为前1022aa
         trimmed_sequences = [seq[:1022] for seq in sequences]
 
         if not trimmed_sequences:
@@ -104,7 +102,6 @@ class FlexibleEmbedder:
         if mode not in ["gene_name", "uniprot_id"]:
             raise ValueError("mode 必须是 'gene_name' 或 'uniprot_id'！")
 
-        # 获取序列
         if mode == "gene_name":
             success_ids, sequences, missing_ids = self.fetch_by_gene_names(names)
         else:
@@ -145,7 +142,6 @@ class FlexibleEmbedder:
     def save_embeddings(self, embeddings: torch.Tensor, success_ids: List[str], save_path: str = "embeddings.npy"):
         embeddings_array = embeddings.numpy()
         np.save(save_path, embeddings_array)
-        print(f"嵌入表示已保存到 {save_path}")
 
 
 
@@ -153,6 +149,7 @@ import scanpy as sc
 import pandas as pd
 
 def make_protein_gene_file(fasta_file="data/uniprot/uniprot_sprot.fasta", save_file="ESM_embedding/protein_gene.csv", species=None):
+    os.makedirs("ESM_embedding", exist_ok=True)
     uniprot2gene = {}
     gene2uniprot = {}
 
@@ -161,7 +158,7 @@ def make_protein_gene_file(fasta_file="data/uniprot/uniprot_sprot.fasta", save_f
     for record in SeqIO.parse(fasta_file, "fasta"):
         desc = record.description
 
-        # ===================== 1. species（可选过滤） =====================
+        # ===================== 1. species =====================
         if species is not None:
             if species not in desc:
                 continue
@@ -218,13 +215,10 @@ uniprot_ids = df_protein_gene["Protein_ID"].tolist()
 embedder = FlexibleEmbedder()
 embeddings, success_ids, missing_ids, long_ids = embedder.embed(uniprot_ids, mode="uniprot_id")
 
-print("成功的ID:", len(success_ids), success_ids[:20])
-print("没找到的ID:", len(missing_ids), missing_ids[:20])
-print("超长被截取的ID:", len(long_ids), long_ids[:20])
 print("Embeddings shape:", embeddings.shape)
 
 embeddings_array = embeddings.numpy()
-df = pd.DataFrame(embeddings_array.T, columns=uniprot_ids)  # 保留输入顺序
+df = pd.DataFrame(embeddings_array.T, columns=uniprot_ids)  
 #df.to_csv("ESM_embedding/all.tsv", sep='\t')
 np.save("ESM_embedding/all_emb.npy", embeddings_array)   # shape: [n_gene, d]
 pd.Series(uniprot_ids).to_csv("ESM_embedding/gene_names.txt", index=False, header=False)
