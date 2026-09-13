@@ -633,8 +633,8 @@ def analyze_results(args, adata, adata_test, adata_test_X_norm, pred_expr_test, 
 
             for j, gene in enumerate(genes2show_batch):
                 if 1:
-                    vmax_value = "p2"
-                    vmin_value = "p98"
+                    vmax_value = "p98"
+                    vmin_value = "p2"
                 else:
                     combined = np.concatenate([adata_test[:, gene].X, adata_predict[:, gene].X], axis=0)
                     vmax_value = np.max(combined)
