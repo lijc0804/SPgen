@@ -228,7 +228,7 @@ The intestinal villi spatial proteomics dataset was released by the **PLATO** st
 
 The original dataset is available from the Flow2Spatial repository:
 
-https://github.com/bioinfo-biols/Flow2Spatial/tree/main/tests/adata.h5ad
+https://github.com/bioinfo-biols/Flow2Spatial/blob/main/tests/adata.h5ad
 
 For use with the current SPgen scripts, place or rename the downloaded AnnData file as:
 
